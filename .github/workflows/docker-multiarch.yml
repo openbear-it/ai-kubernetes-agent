@@ -12,9 +12,9 @@ on:
         required: true
         default: 'ghcr.io/openbear-it'
       image_name:
-        description: 'Image name (e.g. kubernetes-mcp-server)'
+        description: 'Image name (e.g. mcp-server)'
         required: true
-        default: 'kubernetes-mcp-server'
+        default: 'mcp-server'
 
 jobs:
   build-and-push:
@@ -53,5 +53,5 @@ jobs:
           MCP_VERSION=${{ env.MCP_VERSION }}
         push: true
         tags: |
-          ghcr.io/${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.MCP_VERSION }}
-          ghcr.io/${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.MCP_VERSION }}
+          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
