@@ -53,5 +53,5 @@ jobs:
           MCP_VERSION=${{ env.MCP_VERSION }}
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.MCP_VERSION }}
-          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+          ghcr.io/${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.MCP_VERSION }}
+          ghcr.io/${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
