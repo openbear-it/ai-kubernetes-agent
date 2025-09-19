@@ -8,8 +8,9 @@ on:
         required: true
         default: 'latest'
       docker_registry:
-        description: 'Docker registry (e.g. ghcr.io/openbear-it/kubernetes-mcp-server)'
+        description: 'Docker registry (e.g. ghcr.io/openbear-it)'
         required: true
+        default: 'ghcr.io/openbear-it'
       image_name:
         description: 'Image name (e.g. kubernetes-mcp-server)'
         required: true
