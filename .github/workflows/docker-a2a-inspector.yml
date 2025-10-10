@@ -36,6 +36,9 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Verify file
+      run: ls -R $GITHUB_WORKSPACE/.github
+
     - name: Copy custom Dockerfile
       run: cp $GITHUB_WORKSPACE/.github/Dockerfile.a2a-inspector ./Dockerfile
 
