@@ -1,4 +1,4 @@
-name: Build and Push Multi-Arch Docker Image
+name: Build and Push Multi-Arch Docker Image (kubernetes_mcp_server)
 
 on:
   workflow_dispatch:
@@ -7,14 +7,6 @@ on:
         description: 'kubernetes-mcp-server release version (e.g. v1.2.3 or latest)'
         required: true
         default: 'latest'
-      docker_registry:
-        description: 'Docker registry (e.g. ghcr.io/openbear-it)'
-        required: true
-        default: 'ghcr.io/openbear-it'
-      image_name:
-        description: 'Image name (e.g. mcp-server)'
-        required: true
-        default: 'mcp-server'
 
 jobs:
   build-and-push:
@@ -23,8 +15,6 @@ jobs:
       contents: read
       packages: write
     env:
-      DOCKER_REGISTRY: ${{ github.event.inputs.docker_registry }}
-      IMAGE_NAME: ${{ github.event.inputs.image_name }}
       MCP_VERSION: ${{ github.event.inputs.mcp_version }}
     steps:
     - name: Checkout repository
@@ -53,5 +43,5 @@ jobs:
           MCP_VERSION=${{ env.MCP_VERSION }}
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ env.MCP_VERSION }}
-          ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+          ghcr.io/${{ github.repository }}/mpc-server:${{ env.MCP_VERSION }}
+          ghcr.io/${{ github.repository }}/mpc-server:latest
