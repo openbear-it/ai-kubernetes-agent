@@ -23,9 +23,6 @@ jobs:
         repository: a2aproject/a2a-inspector
         ref: main
 
-    - name: Copy custom Dockerfile
-      run: cp a2a-inspector/Dockerfile ./Dockerfile
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -38,6 +35,9 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Copy custom Dockerfile
+      run: cp $GITHUB_WORKSPACE/.github/a2a-inspector/Dockerfile ./Dockerfile
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
