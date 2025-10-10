@@ -37,7 +37,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Copy custom Dockerfile
-      run: cp $GITHUB_WORKSPACE/.github/a2a-inspector/Dockerfile ./Dockerfile
+      run: cp $GITHUB_WORKSPACE/a2a-inspector/Dockerfile ./Dockerfile
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
