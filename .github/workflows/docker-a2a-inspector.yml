@@ -21,10 +21,10 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: a2aproject/a2a-inspector
-        ref: main # o il branch/tag desiderato
+        ref: main
 
     - name: Copy custom Dockerfile
-      run: cp .github/Dockerfile.a2a-inspector ../a2a-inspector/Dockerfile
+      run: cp a2a-inspector/Dockerfile ./Dockerfile
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
