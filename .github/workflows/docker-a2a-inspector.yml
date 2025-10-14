@@ -17,6 +17,11 @@ jobs:
     env:
       IMAGE_VERSION: ${{ github.event.inputs.image_version }}
     steps:
+    - name: Checkout current repository first
+      uses: actions/checkout@v4
+      with:
+        path: ai-kubernetes-agent
+
     - name: Checkout a2a-inspector repository
       uses: actions/checkout@v4
       with:
@@ -36,17 +41,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Verify file
-      run: ls -R $GITHUB_WORKSPACE/.github
-
     - name: Copy custom Dockerfile
-      run: cp $GITHUB_WORKSPACE/.github/Dockerfile.a2a-inspector ./Dockerfile
+      run: cp ai-kubernetes-agent/a2a-inspector/Dockerfile a2a-inspector/Dockerfile
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./Dockerfile
+        context: a2a-inspector
+        file: a2a-inspector/Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
