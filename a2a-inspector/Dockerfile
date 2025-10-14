@@ -24,8 +24,18 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install build tools for Python native extensions
-RUN apt-get update && apt-get install -y build-essential gcc libffi-dev && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    rustc \
+    cargo \
+    build-essential \
+    gcc \
+    libffi-dev \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN pip install uv
 COPY pyproject.toml uv.lock ./
