@@ -1,4 +1,5 @@
 # agent_card.py
+import os
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 k8s_skill = AgentSkill(
@@ -48,8 +49,8 @@ public_agent_card = AgentCard(
         "An advanced AI agent for Kubernetes that answers questions, provides metrics, troubleshooting, and automation via MCP protocol. "
         "Supports natural language queries, streaming responses, and multiple skills for cluster management."
     ),
-    url="http://localhost:8080/",
-    version="1.1.0",
+    url=os.getenv("AGENT_URL", "http://localhost:8080/"),
+    version="1.0.0",
     author="OpenBear IT",
     documentation_url="https://github.com/openbear-it/ai-kubernetes-agent",
     contact_email="support@openbear.it",
