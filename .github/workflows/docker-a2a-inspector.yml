@@ -27,6 +27,7 @@ jobs:
       with:
         repository: a2aproject/a2a-inspector
         ref: main
+        path: a2a-inspector
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
