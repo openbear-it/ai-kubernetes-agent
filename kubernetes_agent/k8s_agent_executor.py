@@ -63,10 +63,17 @@ class k8sAgentExecutor(AgentExecutor):
                 if current_time - last_progress_time > progress_interval:
                     progress_msg = f"Still processing your request... (steps: {step_count}, elapsed: {elapsed_time:.2f}s)"
                     self.logger.info(f"Sending progress update: {progress_msg}")
-                    await event_queue.enqueue_event(
-                        new_agent_text_message(progress_msg)
-                    )
-                    last_progress_time = current_time
+                    try:
+                        await event_queue.enqueue_event(
+                            new_agent_text_message(progress_msg)
+                        )
+                        last_progress_time = current_time
+                    except Exception as queue_error:
+                        if "Queue is closed" in str(queue_error):
+                            self.logger.warning("A2A queue closed prematurely, storing response for final delivery")
+                            break  # Exit the streaming loop to deliver final response
+                        else:
+                            raise  # Re-raise unexpected errors
                 
                 # Check if this is the final answer
                 if step.get("is_task_complete", False):
@@ -81,17 +88,29 @@ class k8sAgentExecutor(AgentExecutor):
 
             # Send the final answer to the A2A queue
             total_time = time.time() - start_time
+            
+            # Function to check queue status and deliver message
+            async def safe_enqueue(msg: str) -> bool:
+                try:
+                    await event_queue.enqueue_event(
+                        new_agent_text_message(msg)
+                    )
+                    return True
+                except Exception as e:
+                    if "Queue is closed" in str(e):
+                        self.logger.error(f"Cannot deliver message - A2A queue closed after {total_time:.2f}s")
+                        return False
+                    raise
+            
             if final_content:
-                self.logger.info(f"Execution completed successfully in {total_time:.2f}s after {step_count} steps")
-                await event_queue.enqueue_event(
-                    new_agent_text_message(final_content)
-                )
+                self.logger.info(f"Attempting to deliver final response after {total_time:.2f}s and {step_count} steps")
+                if not await safe_enqueue(final_content):
+                    # Log the response that couldn't be delivered for debugging
+                    self.logger.warning("Final response that couldn't be delivered:")
+                    self.logger.warning(final_content[:500] + "..." if len(final_content) > 500 else final_content)
             else:
                 self.logger.warning(f"No content generated after {total_time:.2f}s and {step_count} steps")
-                # Fallback if no content was generated
-                await event_queue.enqueue_event(
-                    new_agent_text_message("Sorry, I was unable to process your request.")
-                )
+                await safe_enqueue("Sorry, I was unable to process your request.")
 
         except Exception as e:
             error_details = f"Error during agent execution after {time.time() - start_time:.2f}s: {str(e)}"
