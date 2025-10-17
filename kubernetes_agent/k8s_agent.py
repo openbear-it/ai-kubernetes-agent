@@ -14,10 +14,33 @@ from dotenv import load_dotenv
 # Add parent directory to path to import utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-load_dotenv()
-
+# Setup logging first
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Load environment variables
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+if os.path.exists(env_path):
+    logger.info(f"Loading environment from {env_path}")
+    load_dotenv(env_path)
+else:
+    logger.warning(f"No .env file found at {env_path}")
+
+# Log critical environment variables
+env_vars = {
+    'AGENT_TYPE': os.getenv('AGENT_TYPE', 'ollama'),
+    'OLLAMA_URL': os.getenv('OLLAMA_URL', 'http://svc-ollama:11434'),
+    'OLLAMA_MODEL': os.getenv('OLLAMA_MODEL', 'llama2'),
+    'MCP_SERVER_URL': os.getenv('MCP_SERVER_URL'),
+}
+
+logger.info("Environment configuration:")
+for key, value in env_vars.items():
+    # Mask sensitive values if needed
+    if 'KEY' in key or 'SECRET' in key:
+        logger.info(f"{key}: ****")
+    else:
+        logger.info(f"{key}: {value}")
 
 
 # Determine LLM provider from environment, with fallback
@@ -25,10 +48,14 @@ llm_selected = os.getenv("AGENT_TYPE", "ollama").lower()
 logger.info(f"Selected LLM provider: {llm_selected}")
 
 def create_mcp_client():
-    MCP_SERVER_URL=os.getenv('MCP_SERVER_URL')
+    MCP_SERVER_URL = os.getenv('MCP_SERVER_URL')
+    if not MCP_SERVER_URL:
+        raise ValueError("MCP_SERVER_URL environment variable is not set")
+    
+    logger.debug(f"Creating MCP client with URL: {MCP_SERVER_URL}")
     return MultiServerMCPClient({
         "k8s": {
-            "url":f"{MCP_SERVER_URL}/sse",
+            "url": f"{MCP_SERVER_URL}/sse",
             "transport": "sse"
         }
     })
@@ -67,13 +94,26 @@ class k8sAgent:
         try:
             if llm_selected == "ollama":
                 logger.info("Trying to connect to Ollama...")
+                
+                # Get and validate Ollama configuration
                 ollama_url = os.getenv('OLLAMA_URL')
-                ollama_model = os.getenv('OLLAMA_MODEL', 'llama3.2:3b')
-                logger.info(f"Ollama URL: {ollama_url}, Model: {ollama_model}")
-
+                if not ollama_url:
+                    logger.warning("OLLAMA_URL not set, using default http://svc-ollama:11434")
+                    ollama_url = 'http://svc-ollama:11434'
+                
+                ollama_model = os.getenv('OLLAMA_MODEL', 'llama2')
+                logger.info(f"Ollama configuration:")
+                logger.info(f"  URL: {ollama_url}")
+                logger.info(f"  Model: {ollama_model}")
+                
+                # Additional validation
+                if not ollama_url.startswith(('http://', 'https://')):
+                    raise ValueError(f"Invalid OLLAMA_URL: {ollama_url}. Must start with http:// or https://")
+                
                 llm = ChatOllama(
                     model=ollama_model,
-                    base_url=ollama_url
+                    base_url=ollama_url,
+                    timeout=60  # Add timeout to avoid hanging
                 )
                 # Quick test to verify Ollama works
                 await llm.ainvoke("test")
